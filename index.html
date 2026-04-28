@@ -232,10 +232,10 @@
             document.getElementById('score-val').innerText = "0";
 
             // --- TEST MODE FOR RESET ---
-            //currentLvl = Math.floor(Math.random() * 3);
-            //nextLvl = Math.floor(Math.random() * 3);
-             currentLvl = 7; // UNCOMMENT TO START WITH 8TH PIC
-             nextLvl = 7;    // UNCOMMENT TO START WITH 8TH PIC
+            currentLvl = Math.floor(Math.random() * 3);
+            nextLvl = Math.floor(Math.random() * 3);
+            //currentLvl = 7; // UNCOMMENT TO START WITH 8TH PIC
+            //nextLvl = 7;    // UNCOMMENT TO START WITH 8TH PIC
             
             updateNextPreview();
             updateProgressionBar();
@@ -286,10 +286,9 @@
                 spawnFruit(currentMouseX, 40, currentLvl, false);
                 canDrop = false; setTimeout(() => canDrop = true, 600);
                 
-                // --- TEST MODE FOR MOBILE TOUCH ---
                 currentLvl = nextLvl;
-                //nextLvl = Math.floor(Math.random() * 3);
-                 nextLvl = 7; // UNCOMMENT FOR CONSTANT 8TH PIC SPAWN
+                nextLvl = Math.floor(Math.random() * 3);
+                //nextLvl = 7; // UNCOMMENT FOR CONSTANT 8TH PIC SPAWN
                 
                 updateNextPreview();
             }
@@ -316,10 +315,9 @@
                 spawnFruit(currentMouseX, 40, currentLvl, false);
                 canDrop = false; setTimeout(() => canDrop = true, 600);
                 
-                // --- TEST MODE FOR MOUSE CLICK ---
                 currentLvl = nextLvl;
-                //nextLvl = Math.floor(Math.random() * 3);
-                 nextLvl = 7; // UNCOMMENT FOR CONSTANT 8TH PIC SPAWN
+                nextLvl = Math.floor(Math.random() * 3);
+                //nextLvl = 7; // UNCOMMENT FOR CONSTANT 8TH PIC SPAWN
                 
                 updateNextPreview();
             }
