@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>QWER Merge Game</title>
-    <link rel="icon" type="image/webp" href="Asset/Image/website_icon.webp">
+    <link rel="icon" type="image/webp" href="Asset/Image/website_icon.webp?v=1">
     <style>
         body { 
             margin: 0; background: #0f0f0f; display: flex; flex-direction: column; 
@@ -23,7 +23,7 @@
             display: flex; align-items: center; justify-content: center;
             background: rgba(255,255,255,0.05); padding: 8px 15px;
             border-radius: 50px; margin: 5px auto; border: 1px solid #333; gap: 4px;
-            max-width: 90%; 
+            max-width: 90%; flex-wrap: nowrap;
         }
         .prog-icon { width: 22px; height: 22px; border-radius: 50%; border: 1px solid #555; flex-shrink: 0; }
         .prog-arrow { color: #00d2ff; font-size: 14px; font-weight: 900; margin: 0 2px; flex-shrink: 0; }
@@ -36,14 +36,14 @@
         }
 
         #menu-logo { width: 180px; height: auto; margin-bottom: 15px; }
-        #menu-title { font-size: 42px; font-weight: 900; margin: 0; text-align: center; }
-        #menu-desc { font-size: 14px; color: #aaa; max-width: 320px; text-align: center; margin: 15px 0 30px 0; line-height: 1.4; }
+        #menu-title { font-size: 42px; font-weight: 900; margin: 0; text-align: center; padding: 0 20px; }
+        #menu-desc { font-size: 14px; color: #aaa; max-width: 320px; text-align: center; margin: 15px 0 30px 0; line-height: 1.4; padding: 0 10px; }
         .menu-footer { display: flex; gap: 10px; }
         
         #start-btn { padding: 12px 30px; font-size: 16px; background: linear-gradient(135deg, #3a7bd5 0%, #00d2ff 100%); border-radius: 8px; color: white; border: none; font-weight: bold; cursor: pointer; }
         #menu-lang-btn { padding: 12px 15px; background: #2c3e50; border: 1px solid #444; border-radius: 8px; color: white; cursor: pointer; font-size: 12px; }
 
-        #ui-wrapper { display: flex; gap: 15px; opacity: 0; transition: opacity 0.5s; pointer-events: none; }
+        #ui-wrapper { display: flex; gap: 15px; opacity: 0; transition: opacity 0.5s; pointer-events: none; margin-top: 10px; }
         #ui-wrapper.active { opacity: 1; pointer-events: auto; }
         
         #game-container {
@@ -87,7 +87,7 @@
     <div id="menu-overlay">
         <img id="menu-logo" src="Asset/Image/qwer_logo.webp"> 
         <h1 id="menu-title">QWER CEREMONY MERGE</h1>
-        <p id="menu-desc">Drop the icon down, they will merge into bigger icon when touched.</p>
+        <p id="menu-desc">Drop the picture and they will merge to bigger picture when touched. Can you get to the final picture without crossing red line?</p>
         <div class="menu-footer">
             <button id="start-btn" onclick="startGame()">START GAME</button>
             <button id="menu-lang-btn" onclick="toggleLanguage()">English / 한국어</button>
@@ -126,8 +126,20 @@
         const mergeSfx = new Audio('Asset/Audio/sfx_pop.ogg');
         let currentLang = 'en'; 
         const trans = {
-            en: { title: "QWER CEREMONY MERGE", desc: "Drop icons to merge. Don't cross the red line!", score: "SCORE", high: "HIGH SCORE", next: "NEXT UP", best: "ALL-TIME BEST", theme: "Switch Theme", music: "Next Song", playing: "Now playing:", start: "START GAME" },
-            kr: { title: "QWER 세레모니 머지", desc: "아이콘을 떨어뜨려 합치세요. 레드라인을 넘지 마세요!", score: "점수", high: "최고 점수", next: "다음 조각", best: "최고 기록", theme: "테마 변경", music: "음악 변경", playing: "현재 곡:", start: "게임 시작" }
+            en: { 
+                title: "QWER CEREMONY MERGE", 
+                desc: "Drop the picture and they will merge to bigger picture when touched. Can you get to the final picture without crossing red line?", 
+                score: "SCORE", high: "HIGH SCORE", next: "NEXT UP", best: "ALL-TIME BEST", 
+                theme: "Switch Theme", music: "Next Song", playing: "Now playing:", start: "START GAME",
+                win: "YOU WIN!", loss: "GAME OVER", restart: "Tap to restart"
+            },
+            kr: { 
+                title: "QWER 세레모니 머지", 
+                desc: "사진을 떨어뜨려 보세요! 같은 사진끼리 닿으면 더 큰 사진으로 합쳐집니다. 레드라인을 넘지 않고 마지막 최종 단계까지 도달할 수 있을까요?", 
+                score: "현재 점수", high: "최고 점수", next: "다음 단계", best: "최고 기록", 
+                theme: "테마 변경", music: "곡 변경", playing: "현재 재생 중:", start: "게임 시작",
+                win: "성공!", loss: "게임 오버", restart: "다시 시작하려면 탭하세요"
+            }
         };
 
         const THEMES = [
@@ -149,7 +161,7 @@
         const height = isMobile ? 500 : 600;
         const gameOverLineY = 100;
 
-        let themeIdx = 0, songIdx = 0, score = 0, bestLvl = 0;
+        let themeIdx = 0, songIdx = 0, score = 0, highscore = 0, bestLvl = 0;
         let isGameOver = false, isWin = false, canDrop = true, gameStarted = false;
         let currentLvl = 0, nextLvl = 0, currentMouseX = width/2;
 
@@ -197,7 +209,6 @@
                 bar.appendChild(img);
                 if (i < 8) { const a = document.createElement('span'); a.className = 'prog-arrow'; a.innerText = '»'; bar.appendChild(a); }
             });
-            // Also update the best merge icon dynamically
             document.getElementById('best-fruit-img').src = imageCache[themeIdx][bestLvl].src;
         }
 
@@ -219,8 +230,13 @@
             ]);
             score = 0; isGameOver = false; isWin = false; canDrop = true;
             document.getElementById('score-val').innerText = "0";
-            currentLvl = Math.floor(Math.random() * 3);
-            nextLvl = Math.floor(Math.random() * 3);
+
+            // --- TEST MODE FOR RESET ---
+            //currentLvl = Math.floor(Math.random() * 3);
+            //nextLvl = Math.floor(Math.random() * 3);
+             currentLvl = 7; // UNCOMMENT TO START WITH 8TH PIC
+             nextLvl = 7;    // UNCOMMENT TO START WITH 8TH PIC
+            
             updateNextPreview();
             updateProgressionBar();
         }
@@ -235,7 +251,7 @@
             if (isMerge) { 
                 mergeSfx.currentTime = 0; mergeSfx.play().catch(()=>{}); 
                 if (lvl > bestLvl) { bestLvl = lvl; document.getElementById('best-fruit-img').src = imageCache[themeIdx][lvl].src; }
-                if (lvl === 8) setTimeout(() => isWin = true, 500); 
+                if (lvl === 8) isWin = true;
             }
         }
 
@@ -247,51 +263,72 @@
             if (img.complete) ctx.drawImage(img, 5, 5, 50, 50); ctx.restore();
         }
 
-        // Logic to check if the touch/click is inside the box
-        function isInsideGameBox(e) {
+        function isInsideGameBox(clientX, clientY) {
             const rect = document.getElementById('game-container').getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             return (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom);
         }
 
-        function getXCoord(e) {
+        function getXCoord(clientX) {
             const rect = document.getElementById('game-container').getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const scale = isMobile ? 0.8 : 1;
             const x = (clientX - rect.left) / scale;
             const r = RADIUS_LEVELS[currentLvl];
             return Math.max(r, Math.min(width - r, x));
         }
 
-        window.addEventListener('touchstart', (e) => { if(gameStarted && isInsideGameBox(e)) currentMouseX = getXCoord(e); }, {passive:false});
-        window.addEventListener('touchmove', (e) => { if(gameStarted && isInsideGameBox(e)) { e.preventDefault(); currentMouseX = getXCoord(e); } }, {passive:false});
         window.addEventListener('touchend', (e) => { 
-            if (e.target.tagName === 'BUTTON' || e.target.closest('.side-btn') || e.target.closest('.sidebar')) {
-                return; 
-            }
-        
-            if(!gameStarted || !canDrop || isGameOver || isWin) { 
-                if(isGameOver || isWin) resetGame(); 
-                return; 
-            }
-            if(isInsideGameBox(e.changedTouches[0])) {
+            if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+            if(!gameStarted) return;
+            if(isGameOver || isWin) { resetGame(); return; }
+            
+            const touch = e.changedTouches[0];
+            if(canDrop && isInsideGameBox(touch.clientX, touch.clientY)) {
                 spawnFruit(currentMouseX, 40, currentLvl, false);
-                canDrop = false; 
-                setTimeout(() => canDrop = true, 600);
-                currentLvl = nextLvl; 
-                nextLvl = Math.floor(Math.random() * 3);
+                canDrop = false; setTimeout(() => canDrop = true, 600);
+                
+                // --- TEST MODE FOR MOBILE TOUCH ---
+                currentLvl = nextLvl;
+                //nextLvl = Math.floor(Math.random() * 3);
+                 nextLvl = 7; // UNCOMMENT FOR CONSTANT 8TH PIC SPAWN
+                
                 updateNextPreview();
             }
         });
 
-        window.addEventListener('mousemove', (e) => { if(gameStarted && isInsideGameBox(e)) currentMouseX = getXCoord(e); });
+        window.addEventListener('touchstart', (e) => { 
+            if(gameStarted && isInsideGameBox(e.touches[0].clientX, e.touches[0].clientY)) {
+                currentMouseX = getXCoord(e.touches[0].clientX);
+            }
+        }, {passive:false});
+
+        window.addEventListener('touchmove', (e) => { 
+            if(gameStarted && isInsideGameBox(e.touches[0].clientX, e.touches[0].clientY)) {
+                e.preventDefault(); 
+                currentMouseX = getXCoord(e.touches[0].clientX);
+            }
+        }, {passive:false});
+
         window.addEventListener('mousedown', (e) => {
-            if(!gameStarted || !canDrop || isGameOver || isWin || !isInsideGameBox(e)) return;
-            spawnFruit(currentMouseX, 40, currentLvl, false);
-            canDrop = false; setTimeout(() => canDrop = true, 600);
-            currentLvl = nextLvl; nextLvl = Math.floor(Math.random() * 3);
-            updateNextPreview();
+            if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+            if(!gameStarted) return;
+            if(isGameOver || isWin) { resetGame(); return; }
+            if(canDrop && isInsideGameBox(e.clientX, e.clientY)) {
+                spawnFruit(currentMouseX, 40, currentLvl, false);
+                canDrop = false; setTimeout(() => canDrop = true, 600);
+                
+                // --- TEST MODE FOR MOUSE CLICK ---
+                currentLvl = nextLvl;
+                //nextLvl = Math.floor(Math.random() * 3);
+                 nextLvl = 7; // UNCOMMENT FOR CONSTANT 8TH PIC SPAWN
+                
+                updateNextPreview();
+            }
+        });
+
+        window.addEventListener('mousemove', (e) => { 
+            if(gameStarted && isInsideGameBox(e.clientX, e.clientY)) {
+                currentMouseX = getXCoord(e.clientX);
+            }
         });
 
         Events.on(engine, 'collisionStart', (e) => {
@@ -303,7 +340,9 @@
                         const my = (p.bodyA.position.y + p.bodyB.position.y)/2;
                         World.remove(engine.world, [p.bodyA, p.bodyB]);
                         spawnFruit(mx, my, l + 1, true);
-                        score += (l + 1) * 10; document.getElementById('score-val').innerText = score;
+                        score += (l + 1) * 10; 
+                        document.getElementById('score-val').innerText = score;
+                        if(score > highscore) { highscore = score; document.getElementById('highscore-val').innerText = highscore; }
                     }
                 }
             });
@@ -312,8 +351,9 @@
         Events.on(render, 'afterRender', () => {
             if (!gameStarted) return;
             const ctx = render.context;
+            
             ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.moveTo(0, gameOverLineY); ctx.lineTo(width, gameOverLineY);
-            ctx.strokeStyle = "red"; ctx.stroke(); ctx.setLineDash([]);
+            ctx.strokeStyle = "red"; ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
             
             Composite.allBodies(engine.world).forEach(body => {
                 if (!body.isStatic) {
@@ -321,7 +361,10 @@
                     ctx.save(); ctx.translate(body.position.x, body.position.y); ctx.rotate(body.angle);
                     ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.clip();
                     if (img.complete) ctx.drawImage(img, -r, -r, r * 2, r * 2); ctx.restore();
-                    if (body.spawnTime > 0 && (Date.now() - body.spawnTime) > 1500 && (body.position.y - r) < gameOverLineY) isGameOver = true;
+                    
+                    if (!isWin && body.spawnTime > 0 && (Date.now() - body.spawnTime) > 1500) {
+                        if (body.position.y - r < gameOverLineY) isGameOver = true;
+                    }
                 }
             });
 
@@ -330,6 +373,47 @@
                 ctx.save(); ctx.translate(currentMouseX, 40); ctx.globalAlpha = 0.5;
                 ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.clip();
                 if (img.complete) ctx.drawImage(img, -r, -r, r * 2, r * 2); ctx.restore();
+            }
+
+            if (isGameOver || isWin) {
+                const l = trans[currentLang];
+                ctx.fillStyle = "rgba(0,0,0,0.85)"; 
+                ctx.fillRect(0, 0, width, height);
+                
+                ctx.textAlign = "center";
+                ctx.fillStyle = isWin ? "#f1c40f" : "#ff4d4d"; 
+                ctx.font = "bold 36px 'Segoe UI'";
+                
+                // 1. Draw Text First
+                const textY = height / 2 - 100;
+                ctx.fillText(isWin ? l.win : l.loss, width / 2, textY);
+
+                if (isWin) {
+                    // 2. Draw Square 9th Picture Below Text
+                    const winImg = imageCache[themeIdx][8];
+                    const size = 180; // Size of the square
+                    const imgX = width / 2 - size / 2;
+                    const imgY = textY + 30; // Spacing below "YOU WIN"
+                    
+                    if (winImg.complete) {
+                        // Draw a simple border/frame
+                        ctx.strokeStyle = "#f1c40f";
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(imgX - 2, imgY - 2, size + 4, size + 4);
+                        // Draw the square image
+                        ctx.drawImage(winImg, imgX, imgY, size, size);
+                    }
+                    
+                    // 3. Draw Restart Hint below the image
+                    ctx.fillStyle = "white";
+                    ctx.font = "16px 'Segoe UI'";
+                    ctx.fillText(l.restart, width / 2, imgY + size + 40);
+                } else {
+                    // Standard Game Over restart hint
+                    ctx.fillStyle = "white";
+                    ctx.font = "16px 'Segoe UI'";
+                    ctx.fillText(l.restart, width / 2, textY + 50);
+                }
             }
         });
 
