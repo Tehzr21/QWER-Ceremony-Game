@@ -1,6 +1,6 @@
 # QWER-Ceremony-Game
 
-## ⚖️ Disclaimer
+## Disclaimer
 This is a non-commercial fan-made project. 
 All images and music used in this project are the property of **Tamago Production** and **QWER**. No copyright infringement is intended.
 
