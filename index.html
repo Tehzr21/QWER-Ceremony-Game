@@ -168,7 +168,7 @@
         const isMobile = window.innerWidth < 600;
         const width = isMobile ? 300 : 400;
         const height = isMobile ? 500 : 600;
-        const gameOverLineY = 100;
+        const gameOverLineY = 80;
 
         let score = 0;
         let highscore = parseInt(localStorage.getItem('qwer_highscore')) || 0;
@@ -283,7 +283,7 @@
                 restitution: 0.4, 
                 friction: 0.05, 
                 density: 0.001,
-                slop: 0.5 // Micro-collision breathing room
+                slop: 0.3 // Micro-collision breathing room
             });
             fruit.spawnTime = isMerge ? 0 : Date.now();
             World.add(engine.world, fruit);
