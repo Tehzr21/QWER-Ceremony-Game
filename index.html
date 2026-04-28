@@ -414,7 +414,16 @@
 
         function toggleTheme(e) { if(e) e.stopPropagation(); themeIdx = (themeIdx + 1) % THEMES.length; updateProgressionBar(); updateNextPreview(); }
         function nextSong(e) { if(e) e.stopPropagation(); songIdx = (songIdx + 1) % SONGS.length; bgMusic.src = SONGS[songIdx].url; bgMusic.play(); updateSongDisplay(); }
-
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) {
+                bgMusic.pause();
+            } else {
+                if (gameStarted && !isGameOver && !isWin) {
+                    bgMusic.play().catch(() => console.log("Blocked"));
+                }
+            }
+        });
+        
         updateProgressionBar();
     </script>
 </body>
