@@ -331,16 +331,33 @@
 
         Events.on(engine, 'collisionStart', (e) => {
             e.pairs.forEach(p => {
+                // 1. Check if both bodies still exist and aren't already marked for removal
+                if (!p.bodyA || !p.bodyB || p.bodyA.isRemoving || p.bodyB.isRemoving) return;
+        
                 if (p.bodyA.label === p.bodyB.label && p.bodyA.label !== 'Unknown') {
                     const l = parseInt(p.bodyA.label);
+                    
                     if (l < 8) {
-                        const mx = (p.bodyA.position.x + p.bodyB.position.x)/2;
-                        const my = (p.bodyA.position.y + p.bodyB.position.y)/2;
+                        // 2. Mark them as "removing" immediately so they don't trigger more collisions
+                        p.bodyA.isRemoving = true;
+                        p.bodyB.isRemoving = true;
+        
+                        const mx = (p.bodyA.position.x + p.bodyB.position.x) / 2;
+                        const my = (p.bodyA.position.y + p.bodyB.position.y) / 2;
+        
+                        // 3. Remove from world
                         World.remove(engine.world, [p.bodyA, p.bodyB]);
+        
+                        // 4. Spawn the new one
                         spawnFruit(mx, my, l + 1, true);
-                        score += (l + 1) * 10; 
+        
+                        // Update score
+                        score += (l + 1) * 10;
                         document.getElementById('score-val').innerText = score;
-                        if(score > highscore) { highscore = score; document.getElementById('highscore-val').innerText = highscore; }
+                        if (score > highscore) {
+                            highscore = score;
+                            document.getElementById('highscore-val').innerText = highscore;
+                        }
                     }
                 }
             });
