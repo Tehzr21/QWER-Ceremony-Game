@@ -130,6 +130,7 @@
         const { Engine, Render, Runner, World, Bodies, Events, Composite } = Matter;
 
         const mergeSfx = new Audio('Asset/Audio/sfx_pop.ogg');
+        mergeSfx.preload = 'auto'; // Preload SFX
         let currentLang = 'en'; 
         const trans = {
             en: { 
@@ -163,13 +164,12 @@
             { name: "QWER - PIONEER", kr: "QWER - PIONEER", url: 'Asset/Audio/pioneer.ogg' }
         ];
 
-        const RADIUS_LEVELS = [15, 25, 35, 45, 60, 75, 90, 110, 135];
+        const RADIUS_LEVELS = [16, 26, 36, 46, 60, 76, 90, 110, 136]; // Even radii for stability
         const isMobile = window.innerWidth < 600;
         const width = isMobile ? 300 : 400;
         const height = isMobile ? 500 : 600;
         const gameOverLineY = 100;
 
-        // Persistent Cache Logic
         let score = 0;
         let highscore = parseInt(localStorage.getItem('qwer_highscore')) || 0;
         let bestLvl = parseInt(localStorage.getItem('qwer_bestlvl')) || 0;
@@ -184,6 +184,9 @@
         }));
 
         const engine = Engine.create();
+        engine.positionIterations = 15; // Increased precision
+        engine.velocityIterations = 15; // Prevents tunneling
+
         const render = Render.create({
             element: document.getElementById("game-container"),
             engine: engine,
@@ -192,6 +195,22 @@
         Render.run(render);
         Runner.run(Runner.create(), engine);
         const bgMusic = new Audio(); bgMusic.loop = true;
+
+        // Velocity Cap to prevent "freak outs"
+        Events.on(engine, 'beforeUpdate', () => {
+            Composite.allBodies(engine.world).forEach(body => {
+                if (!body.isStatic) {
+                    const maxSpeed = 15;
+                    if (body.speed > maxSpeed) {
+                        const scale = maxSpeed / body.speed;
+                        Matter.Body.setVelocity(body, {
+                            x: body.velocity.x * scale,
+                            y: body.velocity.y * scale
+                        });
+                    }
+                }
+            });
+        });
 
         function toggleLanguage(e) {
             if(e) e.stopPropagation();
@@ -231,6 +250,10 @@
         function startGame() {
             document.getElementById('menu-overlay').style.display = 'none';
             document.getElementById('ui-wrapper').classList.add('active');
+            
+            // Unlock audio for mobile
+            mergeSfx.play().then(() => { mergeSfx.pause(); mergeSfx.currentTime = 0; }).catch(()=>{});
+
             gameStarted = true; resetGame();
             bgMusic.src = SONGS[songIdx].url; bgMusic.play().catch(()=>{});
             updateSongDisplay();
@@ -238,11 +261,12 @@
 
         function resetGame() {
             World.clear(engine.world);
-            const wallOpts = { isStatic: true, render: { visible: false }, friction: 0.5 };
+            // Thick walls to prevent escaping
+            const wallOpts = { isStatic: true, render: { visible: false }, friction: 0.5, restitution: 0.7 };
             World.add(engine.world, [
-                Bodies.rectangle(width/2, height + 5, width, 10, wallOpts),
-                Bodies.rectangle(-5, height/2, 10, height, wallOpts),
-                Bodies.rectangle(width+5, height/2, 10, height, wallOpts)
+                Bodies.rectangle(width/2, height + 100, width * 2, 200, wallOpts), // Bottom
+                Bodies.rectangle(-100, height/2, 200, height * 2, wallOpts),    // Left
+                Bodies.rectangle(width+100, height/2, 200, height * 2, wallOpts) // Right
             ]);
             score = 0; isGameOver = false; isWin = false; canDrop = true;
             document.getElementById('score-val').innerText = "0";
@@ -255,7 +279,11 @@
         function spawnFruit(x, y, lvl, isMerge = false) {
             if (isGameOver || isWin) return;
             const fruit = Bodies.circle(x, y, RADIUS_LEVELS[lvl], { 
-                label: lvl.toString(), restitution: 0.3, friction: 0.05, density: 0.001     
+                label: lvl.toString(), 
+                restitution: 0.4, 
+                friction: 0.05, 
+                density: 0.001,
+                slop: 0.5 // Micro-collision breathing room
             });
             fruit.spawnTime = isMerge ? 0 : Date.now();
             World.add(engine.world, fruit);
@@ -364,6 +392,17 @@
         Events.on(render, 'afterRender', () => {
             if (!gameStarted) return;
             const ctx = render.context;
+            
+            // Safety Net: If any fruit escapes, teleport it back
+            Composite.allBodies(engine.world).forEach(body => {
+                if (!body.isStatic) {
+                    if (body.position.x < 0 || body.position.x > width || body.position.y > height) {
+                        Matter.Body.setPosition(body, { x: width / 2, y: height / 2 });
+                        Matter.Body.setVelocity(body, { x: 0, y: 0 });
+                    }
+                }
+            });
+
             ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.moveTo(0, gameOverLineY); ctx.lineTo(width, gameOverLineY);
             ctx.strokeStyle = "red"; ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
             
@@ -372,9 +411,11 @@
                     const l = parseInt(body.label); const r = body.circleRadius; const img = imageCache[themeIdx][l];
                     ctx.save(); ctx.translate(body.position.x, body.position.y); ctx.rotate(body.angle);
                     ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.clip();
-                    if (img.complete) ctx.drawImage(img, -r, -r, r * 2, r * 2); ctx.restore();
+                    // Draw with slight pixel buffer to prevent visual jitter
+                    if (img.complete) ctx.drawImage(img, -r + 0.5, -r + 0.5, (r * 2) - 1, (r * 2) - 1); ctx.restore();
                     if (!isWin && body.spawnTime > 0 && (Date.now() - body.spawnTime) > 1500) {
-                        if (body.position.y - r < gameOverLineY) isGameOver = true;
+                        // Check if top of circle is above line AND vertical velocity is low (settled)
+                        if (body.position.y - r < gameOverLineY && Math.abs(body.velocity.y) < 0.2) isGameOver = true;
                     }
                 }
             });
