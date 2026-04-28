@@ -267,11 +267,20 @@
         window.addEventListener('touchstart', (e) => { if(gameStarted && isInsideGameBox(e)) currentMouseX = getXCoord(e); }, {passive:false});
         window.addEventListener('touchmove', (e) => { if(gameStarted && isInsideGameBox(e)) { e.preventDefault(); currentMouseX = getXCoord(e); } }, {passive:false});
         window.addEventListener('touchend', (e) => { 
-            if(!gameStarted || !canDrop || isGameOver || isWin) { if(isGameOver || isWin) resetGame(); return; }
+            if (e.target.tagName === 'BUTTON' || e.target.closest('.side-btn') || e.target.closest('.sidebar')) {
+                return; 
+            }
+        
+            if(!gameStarted || !canDrop || isGameOver || isWin) { 
+                if(isGameOver || isWin) resetGame(); 
+                return; 
+            }
             if(isInsideGameBox(e.changedTouches[0])) {
                 spawnFruit(currentMouseX, 40, currentLvl, false);
-                canDrop = false; setTimeout(() => canDrop = true, 600);
-                currentLvl = nextLvl; nextLvl = Math.floor(Math.random() * 3);
+                canDrop = false; 
+                setTimeout(() => canDrop = true, 600);
+                currentLvl = nextLvl; 
+                nextLvl = Math.floor(Math.random() * 3);
                 updateNextPreview();
             }
         });
