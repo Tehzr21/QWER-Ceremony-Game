@@ -5,119 +5,411 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>QWER Merge Game</title>
     <link rel="icon" type="image/webp" href="Asset/Image/website_icon.webp?v=1">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { 
-            margin: 0; background: #0f0f0f; display: flex; flex-direction: column; 
-            align-items: center; font-family: 'Segoe UI', 'Malgun Gothic', sans-serif; 
-            color: white; overflow: hidden; touch-action: none;
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: #080810;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', 'Noto Sans KR', sans-serif;
+            color: white;
+            overflow: hidden;
+            touch-action: none;
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
         }
-        
-        #game-header { text-align: center; margin: 5px 0; width: 100%; }
-        #game-title-main { 
-            font-size: 32px; font-weight: 900; margin: 0;
-            background: linear-gradient(to bottom, #00d2ff, #3a7bd5);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 30%, rgba(0, 210, 255, 0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 70%, rgba(58, 123, 213, 0.06) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===================== */
+        /*   OUTER 6:10 WRAPPER  */
+        /* ===================== */
+        #outer-wrapper {
+            position: relative;
+            width: 90vw;
+            max-width: 420px;
+            aspect-ratio: 6 / 10;
+            border: 2px solid rgba(0, 210, 255, 0.2);
+            border-radius: 24px;
+            background: rgba(10, 10, 20, 0.97);
+            box-shadow:
+                0 0 0 1px rgba(0,210,255,0.06),
+                0 0 50px rgba(0, 210, 255, 0.08),
+                0 30px 80px rgba(0,0,0,0.9);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            z-index: 1;
+        }
+
+        @media (max-width: 600px) {
+            #outer-wrapper { width: 92vw; max-width: 92vw; border-radius: 16px; }
+        }
+
+        #outer-wrapper::before, #outer-wrapper::after {
+            content: '';
+            position: absolute;
+            width: 18px; height: 18px;
+            border-color: rgba(0,210,255,0.5);
+            border-style: solid;
+            z-index: 10;
+            pointer-events: none;
+        }
+        #outer-wrapper::before { top: 8px; left: 8px; border-width: 2px 0 0 2px; border-radius: 3px 0 0 0; }
+        #outer-wrapper::after  { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; }
+
+        /* ===================== */
+        /*   HEADER              */
+        /* ===================== */
+        #game-header {
+            text-align: center;
+            padding: 6% 4% 1%;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        #game-title-main {
+            font-size: clamp(14px, 4.5vw, 22px);
+            font-weight: 900;
+            margin: 0 0 3px;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #00d2ff, #a0d8ff, #00d2ff);
+            background-size: 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 4s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 0% }
+            100% { background-position: 200% }
+        }
+
+        #header-disclaimer {
+            font-size: clamp(6px, 1.3vw, 8px);
+            color: #2a2a3a;
+            margin-bottom: 3px;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-weight: 400;
+            letter-spacing: 0;
         }
 
         #progression-bar {
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.05); padding: 8px 15px;
-            border-radius: 50px; margin: 5px auto; border: 1px solid #333; gap: 4px;
-            max-width: 90%; flex-wrap: nowrap;
-        }
-        .prog-icon { width: 22px; height: 22px; border-radius: 50%; border: 1px solid #555; flex-shrink: 0; }
-        .prog-arrow { color: #00d2ff; font-size: 14px; font-weight: 900; margin: 0 2px; flex-shrink: 0; }
-
-        #menu-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #1a1a2e 0%, #0f0f0f 100%);
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.02);
+            padding: 8px 10px;
+            border-radius: 50px;
+            margin: 2px auto;
+            border: 1px solid rgba(255,255,255,0.05);
+            gap: 2px;
+            max-width: 96%;
+            flex-wrap: nowrap;
         }
 
-        #menu-logo { width: 180px; height: auto; margin-bottom: 15px; }
-        #menu-title { font-size: 42px; font-weight: 900; margin: 0; text-align: center; padding: 0 20px; }
-        #menu-desc { font-size: 14px; color: #aaa; max-width: 320px; text-align: center; margin: 15px 0 30px 0; line-height: 1.4; padding: 0 10px; }
-        .menu-footer { display: flex; gap: 10px; }
-        
-        #start-btn { padding: 12px 30px; font-size: 16px; background: linear-gradient(135deg, #3a7bd5 0%, #00d2ff 100%); border-radius: 8px; color: white; border: none; font-weight: bold; cursor: pointer; }
-        #menu-lang-btn { padding: 12px 15px; background: #2c3e50; border: 1px solid #444; border-radius: 8px; color: white; cursor: pointer; font-size: 12px; }
+        .prog-icon {
+            width: clamp(20px, 5vw, 30px);
+            height: clamp(20px, 5vw, 30px);
+            border-radius: 50%;
+            border: 1px solid rgba(0,210,255,0.25);
+            flex-shrink: 0;
+        }
+        .prog-arrow {
+            color: rgba(0,210,255,0.4);
+            font-size: clamp(10px, 2.5vw, 14px);
+            font-weight: 900;
+            margin: 0 1px;
+            flex-shrink: 0;
+        }
+        #btn-theme {
+            margin-top: 8px;
+        }
 
-        #ui-wrapper { display: flex; gap: 15px; opacity: 0; transition: opacity 0.5s; pointer-events: none; margin-top: 10px; }
-        #ui-wrapper.active { opacity: 1; pointer-events: auto; }
-        
+        /* ===================== */
+        /*   GAME AREA           */
+        /* ===================== */
+        #game-area {
+            flex: 0 0 72%;
+            display: flex;
+            flex-direction: row;
+            padding: 1% 2% 2%;
+            gap: 2%;
+            min-height: 0;
+            position: relative;
+            z-index: 2;
+        }
+
         #game-container {
-            position: relative; box-shadow: 0 0 40px #000; border-radius: 12px;
-            overflow: hidden; width: 400px; height: 600px;
-            background-image: url('Asset/Image/background.webp'); 
-            background-size: cover; background-position: center;
+            flex: 1;
+            border-radius: 10px;
+            overflow: hidden;
+            background-image: url('Asset/Image/background.webp');
+            background-size: cover;
+            background-position: center;
             touch-action: none;
+            border: 1px solid rgba(0,210,255,0.12);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
         }
 
-        .sidebar { background: rgba(20, 20, 25, 0.95); padding: 15px; border-radius: 12px; text-align: center; width: 140px; border: 1px solid #333; z-index: 10; }
-        .score-box { background: rgba(0,0,0,0.5); padding: 6px; border-radius: 8px; margin-bottom: 6px; border: 1px solid #444; }
-        .score-label { font-size: 9px; color: #888; text-transform: uppercase; }
-        .score-val { font-size: 18px; color: #00d2ff; font-weight: bold; }
-        
-        .side-btn { width: 100%; font-size: 11px; padding: 8px; margin-top: 6px; background: #2c3e50; border-radius: 6px; color: white; border: 1px solid #444; cursor: pointer; }
-        #song-display { color: #00d2ff; margin-top: 8px; font-size: 10px; font-style: italic; min-height: 40px; line-height: 1.3; }
+        /* ===================== */
+        /*   SIDEBAR             */
+        /* ===================== */
+        .sidebar {
+            width: 27%;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        /*
+            background: rgba(255,255,255,0.015);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 10px;
+            padding: 5px 4px;
+        }*/
 
-        @media (max-width: 600px) {
-            #game-title-main { font-size: 22px; }
-            #ui-wrapper { 
-                flex-direction: row; 
-                justify-content: center; 
-                align-items: flex-start;
-                transform: scale(0.8); 
-                transform-origin: top center;
-            }
-            #game-container { width: 300px; height: 500px; }
-            .sidebar { width: 110px; padding: 10px; }
-            .prog-icon { width: 14px; height: 14px; }
+        .score-box {
+            background: rgba(0,0,0,0.5);
+            padding: 4px 3px;
+            border-radius: 6px;
+            border: 1px solid rgba(0,210,255,0.1);
+            text-align: center;
+        }
+
+        .score-label {
+            font-size: clamp(5px, 1.3vw, 7px);
+            color: #88aacc;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .score-val {
+            font-size: clamp(11px, 2.8vw, 15px);
+            color: #00d2ff;
+            font-weight: bold;
+        }
+
+        .side-btn {
+            width: 100%;
+            font-size: clamp(6px, 1.6vw, 8px);
+            padding: 5px 3px;
+            background: rgba(30, 45, 60, 0.9);
+            border-radius: 5px;
+            color: #889;
+            border: 1px solid rgba(255,255,255,0.06);
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+        }
+
+        .side-btn:hover { background: rgba(50,70,90,0.9); color: #fff; border-color: rgba(0,210,255,0.25); }
+        #btn-lang { background: rgba(70,30,100,0.7); border-color: rgba(130,60,180,0.25); color: #b090d8; }
+
+        #lbl-next {
+            font-size: clamp(5px, 1.3vw, 7px);
+            color: #88aacc;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #next-canvas { display: block; margin: 0 auto; width: 90% !important; height: auto !important; aspect-ratio: 1; }
+
+        #song-display {
+            color: #00aacc;
+            font-size: clamp(5px, 1.3vw, 7px);
+            font-style: italic;
+            min-height: 24px;
+            line-height: 1.4;
+            text-align: center;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-weight: 400;
+        }
+
+        /* ===================== */
+        /*   MENU OVERLAY        */
+        /* ===================== */
+        #menu-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(160deg, #0c0c1e 0%, #060610 55%, #0c061a 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 5%;
+        }
+
+        #menu-overlay::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image:
+                linear-gradient(rgba(0,210,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,210,255,0.025) 1px, transparent 1px);
+            background-size: 28px 28px;
+            pointer-events: none;
+        }
+
+        .logo-glow {
+            position: absolute;
+            width: 45%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,210,255,0.12) 0%, transparent 70%);
+            animation: pulse-glow 3s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(1.4); opacity: 0.9; }
+        }
+
+        #menu-logo {
+            width: 80%;
+            max-width: 240px;
+            height: auto;
+            margin-bottom: 4%;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 14px rgba(0,210,255,0.45));
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50%       { transform: translateY(-12px); }
+        }
+
+        #menu-title {
+            font-size: clamp(13px, 3.8vw, 18px);
+            font-weight: 900;
+            margin: 0 0 2%;
+            text-align: center;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #00d2ff 0%, #90c8f8 50%, #00d2ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            z-index: 1;
+        }
+
+        #menu-desc {
+            font-size: clamp(9px, 2.2vw, 11px);
+            color: #667;
+            max-width: 85%;
+            text-align: center;
+            margin: 0 0 5%;
+            line-height: 1.5;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
+        }
+
+        .menu-footer {
+            display: flex;
+            gap: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        #start-btn {
+            padding: 9px 20px;
+            font-size: clamp(10px, 2.4vw, 13px);
+            background: linear-gradient(135deg, #1560a8 0%, #00d2ff 100%);
+            border-radius: 8px;
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 20px rgba(0,210,255,0.25);
+            transition: all 0.2s;
+        }
+
+        #start-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(0,210,255,0.45); }
+        #start-btn:active { transform: translateY(0); }
+
+        #menu-lang-btn {
+            padding: 9px 11px;
+            background: rgba(35,50,70,0.95);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: #889;
+            cursor: pointer;
+            font-size: clamp(7px, 1.8vw, 9px);
+            font-family: 'Orbitron', sans-serif;
+            transition: all 0.2s;
+        }
+
+        #menu-lang-btn:hover { border-color: rgba(0,210,255,0.35); color: #fff; }
+
+        #main-disclaimer {
+            font-size: clamp(6px, 1.5vw, 8px);
+            color: #2a2a3a;
+            margin-top: 4%;
+            text-align: center;
+            max-width: 88%;
+            line-height: 1.4;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
         }
     </style>
 </head>
 <body>
 
+<div id="outer-wrapper">
+
     <div id="game-header">
         <div id="game-title-main">QWER CEREMONY MERGE</div>
-        <div id="header-disclaimer" style="font-size: 10px; color: #555; margin-bottom: 5px;">
+        <div id="header-disclaimer">
             This is a non-commercial fan-made project. All images and music are property of Tamago Production and QWER.
         </div>
         <div id="progression-bar"></div>
     </div>
 
-    <div id="menu-overlay">
-        <img id="menu-logo" src="Asset/Image/qwer_logo.webp"> 
-        <h1 id="menu-title">QWER CEREMONY MERGE</h1>
-        <p id="menu-desc">Drop the picture and they will merge to bigger picture when touched. Can you get to the final picture without crossing red line?</p>
-        <div class="menu-footer">
-            <button id="start-btn" onclick="startGame()">START GAME</button>
-            <button id="menu-lang-btn" onclick="toggleLanguage()">English / 한국어</button>
-        </div>
-        <div id="main-disclaimer" style="font-size: 10px; color: #666; margin-top: 20px; text-align: center; max-width: 300px; line-height: 1.4;">
-            This is a non-commercial fan-made project. All images and music are property of Tamago Production and QWER.
-        </div>
-    </div>
-
-    <div id="ui-wrapper">
+    <div id="game-area">
         <div id="game-container"></div>
-        
         <div class="sidebar">
-            <button class="side-btn" style="background: #8e44ad;" id="btn-lang" onclick="toggleLanguage(event)">English / 한국어</button>
+            <button class="side-btn" id="btn-lang" onclick="toggleLanguage(event)">English / 한국어</button>
             <div class="score-box">
                 <div class="score-label" id="lbl-score">SCORE</div>
                 <div class="score-val" id="score-val">0</div>
             </div>
             <div class="score-box">
                 <div class="score-label" id="lbl-highscore">HIGH SCORE</div>
-                <div class="score-val" id="highscore-val" style="color: #fff;">0</div>
+                <div class="score-val" id="highscore-val" style="color:#ddd;">0</div>
             </div>
-            <div id="lbl-next" style="font-size: 10px; color: #888;">NEXT UP</div>
-            <canvas id="next-canvas" width="60" height="60"></canvas>
-            <div class="score-box" style="border-color: #e67e22;">
+            <div id="lbl-next">NEXT UP</div>
+            <canvas id="next-canvas" width="80" height="80"></canvas>
+            <div class="score-box" style="border-color:rgba(230,126,34,0.25);">
                 <div class="score-label" id="lbl-best">ALL-TIME BEST</div>
-                <img id="best-fruit-img" style="width:50px; height:50px; border-radius:50%; margin-top: 5px;">
+                <img id="best-fruit-img" style="width:90%;height:auto;aspect-ratio:1;border-radius:50%;margin-top:3px;">
             </div>
             <button class="side-btn" id="btn-theme" onclick="toggleTheme(event)">Switch Theme</button>
             <button class="side-btn" id="btn-music" onclick="nextSong(event)">Next Song</button>
@@ -125,347 +417,352 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-    <script>
-        const { Engine, Render, Runner, World, Bodies, Events, Composite } = Matter;
+    <div id="menu-overlay">
+        <div class="logo-glow"></div>
+        <img id="menu-logo" src="Asset/Image/qwer_logo.webp">
+        <h1 id="menu-title">QWER CEREMONY MERGE</h1>
+        <p id="menu-desc">Drop the picture and they will merge to bigger picture when touched. Can you get to the final picture without crossing red line?</p>
+        <div class="menu-footer">
+            <button id="start-btn" onclick="startGame()">START GAME</button>
+            <button id="menu-lang-btn" onclick="toggleLanguage()">English / 한국어</button>
+        </div>
+        <div id="main-disclaimer">
+            This is a non-commercial fan-made project. All images and music are property of Tamago Production and QWER.
+        </div>
+    </div>
 
-        const mergeSfx = new Audio('Asset/Audio/sfx_pop.ogg');
-        mergeSfx.preload = 'auto'; // Preload SFX
-        let currentLang = 'en'; 
-        const trans = {
-            en: { 
-                title: "QWER CEREMONY MERGE", 
-                desc: "Drop the picture and they will merge to bigger picture when touched. Can you get to the final picture without crossing red line?", 
-                score: "SCORE", high: "HIGH SCORE", next: "NEXT UP", best: "ALL-TIME BEST", 
-                theme: "Switch Theme", music: "Next Song", playing: "Now playing:", start: "START GAME",
-                win: "YOU WIN!", loss: "GAME OVER", restart: "Tap to restart",
-                disclaimer: "This is a non-commercial fan-made project. All images and music are property of Tamago Production and QWER."
-            },
-            kr: { 
-                title: "QWER 세레모니 머지", 
-                desc: "사진을 떨어뜨려 보세요! 같은 사진끼리 닿으면 더 큰 사진으로 합쳐집니다. 레드라인을 넘지 않고 마지막 최종 단계까지 도달할 수 있을까요?", 
-                score: "현재 점수", high: "최고 점수", next: "다음 단계", best: "최고 기록", 
-                theme: "테마 변경", music: "곡 변경", playing: "현재 재생 중:", start: "게임 시작",
-                win: "성공!", loss: "게임 오버", restart: "다시 시작하려면 탭하세요",
-                disclaimer: "본 게임은 팬 메이드 프로젝트입니다. 모든 음악과 이미지의 저작권은 타마고 프로덕션 및 QWER에 있습니다."
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script>
+    const { Engine, Render, Runner, World, Bodies, Events, Composite } = Matter;
+
+    const mergeSfx = new Audio('Asset/Audio/sfx_pop.ogg');
+    mergeSfx.preload = 'auto';
+    let currentLang = 'en';
+
+    const trans = {
+        en: {
+            title: "QWER CEREMONY MERGE",
+            desc: "Drop the picture and they will merge to bigger picture when touched. Can you get to the final picture without crossing red line?",
+            score: "SCORE", high: "HIGH SCORE", next: "NEXT UP", best: "ALL-TIME BEST",
+            theme: "Switch Theme", music: "Next Song", playing: "Now playing:", start: "START GAME",
+            win: "YOU WIN!", loss: "GAME OVER", restart: "Tap to restart",
+            disclaimer: "This is a non-commercial fan-made project. All images and music are property of Tamago Production and QWER."
+        },
+        kr: {
+            title: "QWER 세레모니 머지",
+            desc: "사진을 떨어뜨려 보세요! 같은 사진끼리 닿으면 더 큰 사진으로 합쳐집니다. 레드라인을 넘지 않고 마지막 최종 단계까지 도달할 수 있을까요?",
+            score: "현재 점수", high: "최고 점수", next: "다음 단계", best: "최고 기록",
+            theme: "테마 변경", music: "곡 변경", playing: "현재 재생 중:", start: "게임 시작",
+            win: "성공!", loss: "게임 오버", restart: "다시 시작하려면 탭하세요",
+            disclaimer: "본 게임은 팬 메이드 프로젝트입니다. 모든 음악과 이미지의 저작권은 타마고 프로덕션 및 QWER에 있습니다."
+        }
+    };
+
+    const THEMES = [
+        { icons: ['Asset/Image/white_Q1.webp','Asset/Image/white_W1.webp','Asset/Image/white_E1.webp','Asset/Image/white_R1.webp','Asset/Image/white_Q2.webp','Asset/Image/white_W2.webp','Asset/Image/white_E2.webp','Asset/Image/white_R2.webp','Asset/Image/white_QWER.webp'] },
+        { icons: ['Asset/Image/dark_Q1.webp','Asset/Image/dark_W1.webp','Asset/Image/dark_E1.webp','Asset/Image/dark_R1.webp','Asset/Image/dark_Q2.webp','Asset/Image/dark_W2.webp','Asset/Image/dark_E2.webp','Asset/Image/dark_R2.webp','Asset/Image/dark_QWER.webp'] }
+    ];
+
+    const SONGS = [
+        { name: "QWER - CEREMONY",   kr: "QWER - 세레모니",  url: 'Asset/Audio/ceremony.ogg' },
+        { name: "QWER - BAD HABIT",  kr: "QWER - BAD HABIT", url: 'Asset/Audio/bad_habit.ogg' },
+        { name: "QWER - BANI BANI",  kr: "QWER - 바니바니",  url: 'Asset/Audio/banibani.ogg' },
+        { name: "QWER - OUR VOYAGE", kr: "QWER - OUR VOYAGE",url: 'Asset/Audio/our_voyage.ogg' },
+        { name: "QWER - PIONEER",    kr: "QWER - PIONEER",   url: 'Asset/Audio/pioneer.ogg' }
+    ];
+
+    const RADIUS_LEVELS = [16, 26, 36, 46, 60, 76, 90, 110, 136];
+    const gameOverLineY = 80;
+
+    let score = 0;
+    let highscore = parseInt(localStorage.getItem('qwer_highscore')) || 0;
+    let bestLvl   = parseInt(localStorage.getItem('qwer_bestlvl'))   || 0;
+    let themeIdx = 0, songIdx = 0;
+    let isGameOver = false, isWin = false, canDrop = true, gameStarted = false;
+    let currentLvl = 0, nextLvl = 0;
+    let width = 0, height = 0, currentMouseX = 0;
+
+    document.getElementById('highscore-val').innerText = highscore;
+
+    const imageCache = THEMES.map(t => t.icons.map(src => {
+        const img = new Image(); img.src = src; return img;
+    }));
+
+    const engine = Engine.create();
+    engine.positionIterations = 15;
+    engine.velocityIterations = 15;
+
+    let render;
+    const bgMusic = new Audio(); bgMusic.loop = true;
+
+    Events.on(engine, 'beforeUpdate', () => {
+        Composite.allBodies(engine.world).forEach(body => {
+            if (!body.isStatic) {
+                const maxSpeed = 15;
+                if (body.speed > maxSpeed) {
+                    const scale = maxSpeed / body.speed;
+                    Matter.Body.setVelocity(body, { x: body.velocity.x * scale, y: body.velocity.y * scale });
+                }
             }
-        };
+        });
+    });
 
-        const THEMES = [
-            { icons: ['Asset/Image/white_Q1.webp', 'Asset/Image/white_W1.webp', 'Asset/Image/white_E1.webp', 'Asset/Image/white_R1.webp', 'Asset/Image/white_Q2.webp', 'Asset/Image/white_W2.webp', 'Asset/Image/white_E2.webp', 'Asset/Image/white_R2.webp', 'Asset/Image/white_QWER.webp'] },
-            { icons: ['Asset/Image/dark_Q1.webp', 'Asset/Image/dark_W1.webp', 'Asset/Image/dark_E1.webp', 'Asset/Image/dark_R1.webp', 'Asset/Image/dark_Q2.webp', 'Asset/Image/dark_W2.webp', 'Asset/Image/dark_E2.webp', 'Asset/Image/dark_R2.webp', 'Asset/Image/dark_QWER.webp'] }
-        ];
+    function initRender() {
+        const gc = document.getElementById('game-container');
+        width  = gc.clientWidth;
+        height = gc.clientHeight;
+        currentMouseX = width / 2;
 
-        const SONGS = [
-            { name: "QWER - CEREMONY", kr: "QWER - 세레모니", url: 'Asset/Audio/ceremony.ogg' },
-            { name: "QWER - BAD HABIT", kr: "QWER - BAD HABIT", url: 'Asset/Audio/bad_habit.ogg' },
-            { name: "QWER - BANI BANI", kr: "QWER - 바니바니", url: 'Asset/Audio/banibani.ogg' },
-            { name: "QWER - OUR VOYAGE", kr: "QWER - OUR VOYAGE", url: 'Asset/Audio/our_voyage.ogg' },
-            { name: "QWER - PIONEER", kr: "QWER - PIONEER", url: 'Asset/Audio/pioneer.ogg' }
-        ];
-
-        const RADIUS_LEVELS = [16, 26, 36, 46, 60, 76, 90, 110, 136]; // Even radii for stability
-        const isMobile = window.innerWidth < 600;
-        const width = isMobile ? 300 : 400;
-        const height = isMobile ? 500 : 600;
-        const gameOverLineY = 80;
-
-        let score = 0;
-        let highscore = parseInt(localStorage.getItem('qwer_highscore')) || 0;
-        let bestLvl = parseInt(localStorage.getItem('qwer_bestlvl')) || 0;
-        let themeIdx = 0, songIdx = 0;
-        let isGameOver = false, isWin = false, canDrop = true, gameStarted = false;
-        let currentLvl = 0, nextLvl = 0, currentMouseX = width/2;
-
-        document.getElementById('highscore-val').innerText = highscore;
-
-        const imageCache = THEMES.map(t => t.icons.map(src => {
-            const img = new Image(); img.src = src; return img;
-        }));
-
-        const engine = Engine.create();
-        engine.positionIterations = 15; // Increased precision
-        engine.velocityIterations = 15; // Prevents tunneling
-
-        const render = Render.create({
-            element: document.getElementById("game-container"),
+        render = Render.create({
+            element: gc,
             engine: engine,
             options: { width, height, wireframes: false, background: 'transparent' }
         });
         Render.run(render);
         Runner.run(Runner.create(), engine);
-        const bgMusic = new Audio(); bgMusic.loop = true;
 
-        // Velocity Cap to prevent "freak outs"
-        Events.on(engine, 'beforeUpdate', () => {
-            Composite.allBodies(engine.world).forEach(body => {
-                if (!body.isStatic) {
-                    const maxSpeed = 15;
-                    if (body.speed > maxSpeed) {
-                        const scale = maxSpeed / body.speed;
-                        Matter.Body.setVelocity(body, {
-                            x: body.velocity.x * scale,
-                            y: body.velocity.y * scale
-                        });
-                    }
+        Events.on(render, 'afterRender', renderLoop);
+    }
+
+    function renderLoop() {
+        if (!gameStarted) return;
+        const ctx = render.context;
+
+        Composite.allBodies(engine.world).forEach(body => {
+            if (!body.isStatic) {
+                if (body.position.x < 0 || body.position.x > width || body.position.y > height) {
+                    Matter.Body.setPosition(body, { x: width / 2, y: height / 2 });
+                    Matter.Body.setVelocity(body, { x: 0, y: 0 });
                 }
-            });
-        });
-
-        function toggleLanguage(e) {
-            if(e) e.stopPropagation();
-            currentLang = currentLang === 'en' ? 'kr' : 'en';
-            const l = trans[currentLang];
-            document.getElementById('menu-title').innerText = l.title;
-            document.getElementById('menu-desc').innerText = l.desc;
-            document.getElementById('start-btn').innerText = l.start;
-            document.getElementById('lbl-score').innerText = l.score;
-            document.getElementById('lbl-highscore').innerText = l.high;
-            document.getElementById('lbl-next').innerText = l.next;
-            document.getElementById('lbl-best').innerText = l.best;
-            document.getElementById('btn-theme').innerText = l.theme;
-            document.getElementById('btn-music').innerText = l.music;
-            document.getElementById('main-disclaimer').innerText = l.disclaimer;
-            document.getElementById('header-disclaimer').innerText = l.disclaimer;
-            updateSongDisplay();
-        }
-
-        function updateSongDisplay() {
-            const l = trans[currentLang];
-            const name = currentLang === 'en' ? SONGS[songIdx].name : SONGS[songIdx].kr;
-            document.getElementById('song-display').innerHTML = `<strong>${l.playing}</strong><br>${name}`;
-        }
-
-        function updateProgressionBar() {
-            const bar = document.getElementById('progression-bar');
-            bar.innerHTML = '';
-            THEMES[themeIdx].icons.forEach((src, i) => {
-                const img = document.createElement('img'); img.src = src; img.className = 'prog-icon';
-                bar.appendChild(img);
-                if (i < 8) { const a = document.createElement('span'); a.className = 'prog-arrow'; a.innerText = '»'; bar.appendChild(a); }
-            });
-            document.getElementById('best-fruit-img').src = imageCache[themeIdx][bestLvl].src;
-        }
-
-        function startGame() {
-            document.getElementById('menu-overlay').style.display = 'none';
-            document.getElementById('ui-wrapper').classList.add('active');
-            
-            // Unlock audio for mobile
-            mergeSfx.play().then(() => { mergeSfx.pause(); mergeSfx.currentTime = 0; }).catch(()=>{});
-
-            gameStarted = true; resetGame();
-            bgMusic.src = SONGS[songIdx].url; bgMusic.play().catch(()=>{});
-            updateSongDisplay();
-        }
-
-        function resetGame() {
-            World.clear(engine.world);
-            // Thick walls to prevent escaping
-            const wallOpts = { isStatic: true, render: { visible: false }, friction: 0.5, restitution: 0.7 };
-            World.add(engine.world, [
-                Bodies.rectangle(width/2, height + 100, width * 2, 200, wallOpts), // Bottom
-                Bodies.rectangle(-100, height/2, 200, height * 2, wallOpts),    // Left
-                Bodies.rectangle(width+100, height/2, 200, height * 2, wallOpts) // Right
-            ]);
-            score = 0; isGameOver = false; isWin = false; canDrop = true;
-            document.getElementById('score-val').innerText = "0";
-            currentLvl = Math.floor(Math.random() * 3);
-            nextLvl = Math.floor(Math.random() * 3);
-            updateNextPreview();
-            updateProgressionBar();
-        }
-
-        function spawnFruit(x, y, lvl, isMerge = false) {
-            if (isGameOver || isWin) return;
-            const fruit = Bodies.circle(x, y, RADIUS_LEVELS[lvl], { 
-                label: lvl.toString(), 
-                restitution: 0.4, 
-                friction: 0.05, 
-                density: 0.001,
-                slop: 0.3 // Micro-collision breathing room
-            });
-            fruit.spawnTime = isMerge ? 0 : Date.now();
-            World.add(engine.world, fruit);
-            if (isMerge) { 
-                mergeSfx.currentTime = 0; mergeSfx.play().catch(()=>{}); 
-                if (lvl > bestLvl) { 
-                    bestLvl = lvl; 
-                    localStorage.setItem('qwer_bestlvl', bestLvl);
-                    document.getElementById('best-fruit-img').src = imageCache[themeIdx][lvl].src; 
-                }
-                if (lvl === 8) isWin = true;
-            }
-        }
-
-        function updateNextPreview() {
-            const ctx = document.getElementById('next-canvas').getContext('2d');
-            ctx.clearRect(0, 0, 60, 60);
-            const img = imageCache[themeIdx][nextLvl];
-            ctx.save(); ctx.beginPath(); ctx.arc(30, 30, 25, 0, Math.PI * 2); ctx.clip();
-            if (img.complete) ctx.drawImage(img, 5, 5, 50, 50); ctx.restore();
-        }
-
-        function isInsideGameBox(clientX, clientY) {
-            const rect = document.getElementById('game-container').getBoundingClientRect();
-            return (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom);
-        }
-
-        function getXCoord(clientX) {
-            const rect = document.getElementById('game-container').getBoundingClientRect();
-            const scale = isMobile ? 0.8 : 1;
-            const x = (clientX - rect.left) / scale;
-            const r = RADIUS_LEVELS[currentLvl];
-            return Math.max(r, Math.min(width - r, x));
-        }
-
-        window.addEventListener('touchend', (e) => { 
-            if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
-            if(!gameStarted) return;
-            if(isGameOver || isWin) { resetGame(); return; }
-            const touch = e.changedTouches[0];
-            if(canDrop && isInsideGameBox(touch.clientX, touch.clientY)) {
-                spawnFruit(currentMouseX, 40, currentLvl, false);
-                canDrop = false; setTimeout(() => canDrop = true, 600);
-                currentLvl = nextLvl;
-                nextLvl = Math.floor(Math.random() * 3);
-                updateNextPreview();
             }
         });
 
-        window.addEventListener('touchstart', (e) => { 
-            if(gameStarted && isInsideGameBox(e.touches[0].clientX, e.touches[0].clientY)) {
-                currentMouseX = getXCoord(e.touches[0].clientX);
-            }
-        }, {passive:false});
+        ctx.beginPath(); ctx.setLineDash([5, 5]);
+        ctx.moveTo(0, gameOverLineY); ctx.lineTo(width, gameOverLineY);
+        ctx.strokeStyle = "rgba(255,60,60,0.75)"; ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
 
-        window.addEventListener('touchmove', (e) => { 
-            if(gameStarted && isInsideGameBox(e.touches[0].clientX, e.touches[0].clientY)) {
-                e.preventDefault(); 
-                currentMouseX = getXCoord(e.touches[0].clientX);
-            }
-        }, {passive:false});
-
-        window.addEventListener('mousedown', (e) => {
-            if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
-            if(!gameStarted) return;
-            if(isGameOver || isWin) { resetGame(); return; }
-            if(canDrop && isInsideGameBox(e.clientX, e.clientY)) {
-                spawnFruit(currentMouseX, 40, currentLvl, false);
-                canDrop = false; setTimeout(() => canDrop = true, 600);
-                currentLvl = nextLvl;
-                nextLvl = Math.floor(Math.random() * 3);
-                updateNextPreview();
-            }
-        });
-
-        window.addEventListener('mousemove', (e) => { 
-            if(gameStarted && isInsideGameBox(e.clientX, e.clientY)) {
-                currentMouseX = getXCoord(e.clientX);
-            }
-        });
-
-        Events.on(engine, 'collisionStart', (e) => {
-            e.pairs.forEach(p => {
-                if (!p.bodyA || !p.bodyB || p.bodyA.isRemoving || p.bodyB.isRemoving) return;
-                if (p.bodyA.label === p.bodyB.label && p.bodyA.label !== 'Unknown') {
-                    const l = parseInt(p.bodyA.label);
-                    if (l < 8) {
-                        p.bodyA.isRemoving = true;
-                        p.bodyB.isRemoving = true;
-                        const mx = (p.bodyA.position.x + p.bodyB.position.x) / 2;
-                        const my = (p.bodyA.position.y + p.bodyB.position.y) / 2;
-                        World.remove(engine.world, [p.bodyA, p.bodyB]);
-                        spawnFruit(mx, my, l + 1, true);
-                        score += (l + 1) * 10;
-                        document.getElementById('score-val').innerText = score;
-                        if (score > highscore) {
-                            highscore = score;
-                            localStorage.setItem('qwer_highscore', highscore);
-                            document.getElementById('highscore-val').innerText = highscore;
-                        }
-                    }
-                }
-            });
-        });
-
-        Events.on(render, 'afterRender', () => {
-            if (!gameStarted) return;
-            const ctx = render.context;
-            
-            // Safety Net: If any fruit escapes, teleport it back
-            Composite.allBodies(engine.world).forEach(body => {
-                if (!body.isStatic) {
-                    if (body.position.x < 0 || body.position.x > width || body.position.y > height) {
-                        Matter.Body.setPosition(body, { x: width / 2, y: height / 2 });
-                        Matter.Body.setVelocity(body, { x: 0, y: 0 });
-                    }
-                }
-            });
-
-            ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.moveTo(0, gameOverLineY); ctx.lineTo(width, gameOverLineY);
-            ctx.strokeStyle = "red"; ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
-            
-            Composite.allBodies(engine.world).forEach(body => {
-                if (!body.isStatic) {
-                    const l = parseInt(body.label); const r = body.circleRadius; const img = imageCache[themeIdx][l];
-                    ctx.save(); ctx.translate(body.position.x, body.position.y); ctx.rotate(body.angle);
-                    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.clip();
-                    // Draw with slight pixel buffer to prevent visual jitter
-                    if (img.complete) ctx.drawImage(img, -r + 0.5, -r + 0.5, (r * 2) - 1, (r * 2) - 1); ctx.restore();
-                    if (!isWin && body.spawnTime > 0 && (Date.now() - body.spawnTime) > 1500) {
-                        // Check if top of circle is above line AND vertical velocity is low (settled)
-                        if (body.position.y - r < gameOverLineY && Math.abs(body.velocity.y) < 0.2) isGameOver = true;
-                    }
-                }
-            });
-
-            if (canDrop && !isGameOver && !isWin) {
-                const r = RADIUS_LEVELS[currentLvl]; const img = imageCache[themeIdx][currentLvl];
-                ctx.save(); ctx.translate(currentMouseX, 40); ctx.globalAlpha = 0.5;
+        Composite.allBodies(engine.world).forEach(body => {
+            if (!body.isStatic) {
+                const l = parseInt(body.label); const r = body.circleRadius; const img = imageCache[themeIdx][l];
+                ctx.save(); ctx.translate(body.position.x, body.position.y); ctx.rotate(body.angle);
                 ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.clip();
-                if (img.complete) ctx.drawImage(img, -r, -r, r * 2, r * 2); ctx.restore();
-            }
-
-            if (isGameOver || isWin) {
-                const l = trans[currentLang];
-                ctx.fillStyle = "rgba(0,0,0,0.85)"; ctx.fillRect(0, 0, width, height);
-                ctx.textAlign = "center";
-                ctx.fillStyle = isWin ? "#f1c40f" : "#ff4d4d"; ctx.font = "bold 36px 'Segoe UI'";
-                const textY = height / 2 - 100;
-                ctx.fillText(isWin ? l.win : l.loss, width / 2, textY);
-                if (isWin) {
-                    const winImg = imageCache[themeIdx][8];
-                    const size = 180;
-                    const imgX = width / 2 - size / 2;
-                    const imgY = textY + 30;
-                    if (winImg.complete) {
-                        ctx.strokeStyle = "#f1c40f"; ctx.lineWidth = 3;
-                        ctx.strokeRect(imgX - 2, imgY - 2, size + 4, size + 4);
-                        ctx.drawImage(winImg, imgX, imgY, size, size);
-                    }
-                    ctx.fillStyle = "white"; ctx.font = "16px 'Segoe UI'";
-                    ctx.fillText(l.restart, width / 2, imgY + size + 40);
-                } else {
-                    ctx.fillStyle = "white"; ctx.font = "16px 'Segoe UI'";
-                    ctx.fillText(l.restart, width / 2, textY + 50);
+                if (img.complete) ctx.drawImage(img, -r + 0.5, -r + 0.5, (r * 2) - 1, (r * 2) - 1);
+                ctx.restore();
+                if (!isWin && body.spawnTime > 0 && (Date.now() - body.spawnTime) > 1500) {
+                    if (body.position.y - r < gameOverLineY && Math.abs(body.velocity.y) < 0.2) isGameOver = true;
                 }
             }
         });
 
-        function toggleTheme(e) { if(e) e.stopPropagation(); themeIdx = (themeIdx + 1) % THEMES.length; updateProgressionBar(); updateNextPreview(); }
-        function nextSong(e) { if(e) e.stopPropagation(); songIdx = (songIdx + 1) % SONGS.length; bgMusic.src = SONGS[songIdx].url; bgMusic.play(); updateSongDisplay(); }
-        document.addEventListener("visibilitychange", () => {
-            if (document.hidden) {
-                bgMusic.pause();
+        if (canDrop && !isGameOver && !isWin) {
+            const r = RADIUS_LEVELS[currentLvl]; const img = imageCache[themeIdx][currentLvl];
+            ctx.save(); ctx.translate(currentMouseX, 40); ctx.globalAlpha = 0.5;
+            ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.clip();
+            if (img.complete) ctx.drawImage(img, -r, -r, r * 2, r * 2); ctx.restore();
+        }
+
+        if (isGameOver || isWin) {
+            const l = trans[currentLang];
+            ctx.fillStyle = "rgba(0,0,0,0.88)"; ctx.fillRect(0, 0, width, height);
+            ctx.textAlign = "center";
+            ctx.fillStyle = isWin ? "#f1c40f" : "#ff4d4d";
+            ctx.font = `bold ${Math.round(width * 0.09)}px Orbitron, Segoe UI`;
+            const textY = height / 2 - height * 0.17;
+            ctx.fillText(isWin ? l.win : l.loss, width / 2, textY);
+            if (isWin) {
+                const winImg = imageCache[themeIdx][8];
+                const size = Math.round(width * 0.45);
+                const imgX = width / 2 - size / 2;
+                const imgY = textY + 20;
+                if (winImg.complete) {
+                    ctx.strokeStyle = "#f1c40f"; ctx.lineWidth = 3;
+                    ctx.strokeRect(imgX - 2, imgY - 2, size + 4, size + 4);
+                    ctx.drawImage(winImg, imgX, imgY, size, size);
+                }
+                ctx.fillStyle = "white"; ctx.font = `${Math.round(width * 0.04)}px Orbitron, Segoe UI`;
+                ctx.fillText(l.restart, width / 2, imgY + size + 30);
             } else {
-                if (gameStarted && !isGameOver && !isWin) {
-                    bgMusic.play().catch(() => console.log("Blocked"));
+                ctx.fillStyle = "white"; ctx.font = `${Math.round(width * 0.04)}px Orbitron, Segoe UI`;
+                ctx.fillText(l.restart, width / 2, textY + 45);
+            }
+        }
+    }
+
+    function toggleLanguage(e) {
+        if(e) e.stopPropagation();
+        currentLang = currentLang === 'en' ? 'kr' : 'en';
+        const l = trans[currentLang];
+        document.getElementById('menu-title').innerText = l.title;
+        document.getElementById('menu-desc').innerText = l.desc;
+        document.getElementById('start-btn').innerText = l.start;
+        document.getElementById('lbl-score').innerText = l.score;
+        document.getElementById('lbl-highscore').innerText = l.high;
+        document.getElementById('lbl-next').innerText = l.next;
+        document.getElementById('lbl-best').innerText = l.best;
+        document.getElementById('btn-theme').innerText = l.theme;
+        document.getElementById('btn-music').innerText = l.music;
+        document.getElementById('main-disclaimer').innerText = l.disclaimer;
+        document.getElementById('header-disclaimer').innerText = l.disclaimer;
+        updateSongDisplay();
+    }
+
+    function updateSongDisplay() {
+        const l = trans[currentLang];
+        const name = currentLang === 'en' ? SONGS[songIdx].name : SONGS[songIdx].kr;
+        document.getElementById('song-display').innerHTML = `<strong>${l.playing}</strong><br>${name}`;
+    }
+
+    function updateProgressionBar() {
+        const bar = document.getElementById('progression-bar');
+        bar.innerHTML = '';
+        THEMES[themeIdx].icons.forEach((src, i) => {
+            const img = document.createElement('img'); img.src = src; img.className = 'prog-icon';
+            bar.appendChild(img);
+            if (i < 8) { const a = document.createElement('span'); a.className = 'prog-arrow'; a.innerText = '»'; bar.appendChild(a); }
+        });
+        document.getElementById('best-fruit-img').src = imageCache[themeIdx][bestLvl].src;
+    }
+
+    function startGame() {
+        document.getElementById('menu-overlay').style.display = 'none';
+        mergeSfx.play().then(() => { mergeSfx.pause(); mergeSfx.currentTime = 0; }).catch(()=>{});
+        gameStarted = true;
+        initRender();
+        resetGame();
+        bgMusic.src = SONGS[songIdx].url; bgMusic.play().catch(()=>{});
+        updateSongDisplay();
+    }
+
+    function resetGame() {
+        World.clear(engine.world);
+        const wallOpts = { isStatic: true, render: { visible: false }, friction: 0.5, restitution: 0.7 };
+        World.add(engine.world, [
+            Bodies.rectangle(width/2, height + 100, width * 2, 200, wallOpts),
+            Bodies.rectangle(-100, height/2, 200, height * 2, wallOpts),
+            Bodies.rectangle(width+100, height/2, 200, height * 2, wallOpts)
+        ]);
+        score = 0; isGameOver = false; isWin = false; canDrop = true;
+        document.getElementById('score-val').innerText = "0";
+        currentLvl = Math.floor(Math.random() * 3);
+        nextLvl    = Math.floor(Math.random() * 3);
+        updateNextPreview();
+        updateProgressionBar();
+    }
+
+    function spawnFruit(x, y, lvl, isMerge = false) {
+        if (isGameOver || isWin) return;
+        const fruit = Bodies.circle(x, y, RADIUS_LEVELS[lvl], {
+            label: lvl.toString(), restitution: 0.4, friction: 0.05, density: 0.001, slop: 0.3
+        });
+        fruit.spawnTime = isMerge ? 0 : Date.now();
+        World.add(engine.world, fruit);
+        if (isMerge) {
+            mergeSfx.currentTime = 0; mergeSfx.play().catch(()=>{});
+            if (lvl > bestLvl) {
+                bestLvl = lvl;
+                localStorage.setItem('qwer_bestlvl', bestLvl);
+                document.getElementById('best-fruit-img').src = imageCache[themeIdx][lvl].src;
+            }
+            if (lvl === 8) isWin = true;
+        }
+    }
+
+    function updateNextPreview() {
+        const canvas = document.getElementById('next-canvas');
+        const ctx = canvas.getContext('2d');
+        const s = canvas.width;
+        ctx.clearRect(0, 0, s, s);
+        const img = imageCache[themeIdx][nextLvl];
+        ctx.save(); ctx.beginPath(); ctx.arc(s/2, s/2, s/2 - 2, 0, Math.PI * 2); ctx.clip();
+        if (img.complete) ctx.drawImage(img, 2, 2, s - 4, s - 4); ctx.restore();
+    }
+
+    function isInsideGameBox(clientX, clientY) {
+        const rect = document.getElementById('game-container').getBoundingClientRect();
+        return (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom);
+    }
+
+    function getXCoord(clientX) {
+        const rect = document.getElementById('game-container').getBoundingClientRect();
+        const x = (clientX - rect.left) * (width / rect.width);
+        const r = RADIUS_LEVELS[currentLvl];
+        return Math.max(r, Math.min(width - r, x));
+    }
+
+    window.addEventListener('touchend', (e) => {
+        if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+        if (!gameStarted) return;
+        if (isGameOver || isWin) { resetGame(); return; }
+        const touch = e.changedTouches[0];
+        if (canDrop && isInsideGameBox(touch.clientX, touch.clientY)) {
+            spawnFruit(currentMouseX, 40, currentLvl, false);
+            canDrop = false; setTimeout(() => canDrop = true, 600);
+            currentLvl = nextLvl; nextLvl = Math.floor(Math.random() * 3); updateNextPreview();
+        }
+    });
+
+    window.addEventListener('touchstart', (e) => {
+        if (gameStarted && isInsideGameBox(e.touches[0].clientX, e.touches[0].clientY))
+            currentMouseX = getXCoord(e.touches[0].clientX);
+    }, {passive:false});
+
+    window.addEventListener('touchmove', (e) => {
+        if (gameStarted && isInsideGameBox(e.touches[0].clientX, e.touches[0].clientY)) {
+            e.preventDefault();
+            currentMouseX = getXCoord(e.touches[0].clientX);
+        }
+    }, {passive:false});
+
+    window.addEventListener('mousedown', (e) => {
+        if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+        if (!gameStarted) return;
+        if (isGameOver || isWin) { resetGame(); return; }
+        if (canDrop && isInsideGameBox(e.clientX, e.clientY)) {
+            spawnFruit(currentMouseX, 40, currentLvl, false);
+            canDrop = false; setTimeout(() => canDrop = true, 600);
+            currentLvl = nextLvl; nextLvl = Math.floor(Math.random() * 3); updateNextPreview();
+        }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (gameStarted && isInsideGameBox(e.clientX, e.clientY))
+            currentMouseX = getXCoord(e.clientX);
+    });
+
+    Events.on(engine, 'collisionStart', (e) => {
+        e.pairs.forEach(p => {
+            if (!p.bodyA || !p.bodyB || p.bodyA.isRemoving || p.bodyB.isRemoving) return;
+            if (p.bodyA.label === p.bodyB.label && p.bodyA.label !== 'Unknown') {
+                const l = parseInt(p.bodyA.label);
+                if (l < 8) {
+                    p.bodyA.isRemoving = true; p.bodyB.isRemoving = true;
+                    const mx = (p.bodyA.position.x + p.bodyB.position.x) / 2;
+                    const my = (p.bodyA.position.y + p.bodyB.position.y) / 2;
+                    World.remove(engine.world, [p.bodyA, p.bodyB]);
+                    spawnFruit(mx, my, l + 1, true);
+                    score += (l + 1) * 10;
+                    document.getElementById('score-val').innerText = score;
+                    if (score > highscore) {
+                        highscore = score;
+                        localStorage.setItem('qwer_highscore', highscore);
+                        document.getElementById('highscore-val').innerText = highscore;
+                    }
                 }
             }
         });
-        
-        updateProgressionBar();
-    </script>
+    });
+
+    function toggleTheme(e) { if(e) e.stopPropagation(); themeIdx = (themeIdx + 1) % THEMES.length; updateProgressionBar(); updateNextPreview(); }
+    function nextSong(e)    { if(e) e.stopPropagation(); songIdx = (songIdx + 1) % SONGS.length; bgMusic.src = SONGS[songIdx].url; bgMusic.play(); updateSongDisplay(); }
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) { bgMusic.pause(); }
+        else if (gameStarted && !isGameOver && !isWin) bgMusic.play().catch(()=>{});
+    });
+
+    updateProgressionBar();
+</script>
 </body>
 </html>
