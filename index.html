@@ -473,7 +473,8 @@
         { name: "QWER - PIONEER",    kr: "QWER - PIONEER",   url: 'Asset/Audio/pioneer.ogg' }
     ];
 
-    const RADIUS_LEVELS = [16, 26, 36, 46, 60, 76, 90, 110, 136];
+    const RADIUS_BASE = [0.040, 0.065, 0.090, 0.115, 0.150, 0.190, 0.225, 0.275, 0.340];
+    let RADIUS_LEVELS = [...RADIUS_BASE];
     const gameOverLineY = 80;
 
     let score = 0;
@@ -514,6 +515,8 @@
         width  = gc.clientWidth;
         height = gc.clientHeight;
         currentMouseX = width / 2;
+
+        RADIUS_LEVELS = RADIUS_BASE.map(r => Math.round(r * width));
 
         render = Render.create({
             element: gc,
