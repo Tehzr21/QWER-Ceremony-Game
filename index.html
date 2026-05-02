@@ -231,7 +231,7 @@
             letter-spacing: 1px;
         }
 
-        #next-canvas { display: block; margin: 0 auto; width: 90% !important; height: auto !important; aspect-ratio: 1; }
+        #next-canvas { display: block; margin: 0 auto; max-width: 90%; }
 
         #song-display {
             color: #00aacc;
@@ -682,12 +682,29 @@
 
     function updateNextPreview() {
         const canvas = document.getElementById('next-canvas');
+        const dpr = window.devicePixelRatio || 1;
+        const r = RADIUS_LEVELS[nextLvl];
+        const boxSize = canvas.parentElement.clientWidth * 0.9;
+
+        canvas.width  = boxSize * dpr;
+        canvas.height = boxSize * dpr;
+        canvas.style.width  = boxSize + 'px';
+        canvas.style.height = boxSize + 'px';
+
         const ctx = canvas.getContext('2d');
-        const s = canvas.width;
-        ctx.clearRect(0, 0, s, s);
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, boxSize, boxSize);
+
+        // Draw circle scaled to in-game size relative to box
+        const maxR = RADIUS_LEVELS[2]; // level 8 as reference max
+        const scale = Math.min(1, r / maxR)*0.6;
+        const drawR = (boxSize / 2) * scale;
+        const cx = boxSize / 2;
+        const cy = boxSize / 2;
+
         const img = imageCache[themeIdx][nextLvl];
-        ctx.save(); ctx.beginPath(); ctx.arc(s/2, s/2, s/2 - 2, 0, Math.PI * 2); ctx.clip();
-        if (img.complete) ctx.drawImage(img, 2, 2, s - 4, s - 4); ctx.restore();
+        ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, drawR, 0, Math.PI * 2); ctx.clip();
+        if (img.complete) ctx.drawImage(img, cx - drawR, cy - drawR, drawR * 2, drawR * 2); ctx.restore();
     }
 
     function isInsideGameBox(clientX, clientY) {
