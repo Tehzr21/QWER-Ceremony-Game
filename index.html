@@ -43,7 +43,7 @@
             position: relative;
             width: 90vw;
             max-width: 420px;
-            aspect-ratio: 6 / 10;
+            aspect-ratio: 6 / 9.7;
             border: 2px solid rgba(0, 210, 255, 0.2);
             border-radius: 24px;
             background: rgba(10, 10, 20, 0.97);
@@ -146,7 +146,7 @@
         /*   GAME AREA           */
         /* ===================== */
         #game-area {
-            flex: 0 0 72%;
+            flex: 0 0 77%;
             display: flex;
             flex-direction: row;
             padding: 1% 2% 2%;
@@ -296,6 +296,10 @@
             position: relative;
             z-index: 1;
         }
+        @keyframes spin {
+            0%   { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
@@ -414,6 +418,39 @@
             <button class="side-btn" id="btn-theme" onclick="toggleTheme(event)">Switch Theme</button>
             <button class="side-btn" id="btn-music" onclick="nextSong(event)">Next Song</button>
             <div id="song-display">...</div>
+            <div style="display:flex; justify-content:center; margin-top:4px;">
+                <div id="cd-disc" style="
+                    width: 80%;
+                    aspect-ratio: 1;
+                    border-radius: 50%;
+                    background: radial-gradient(circle, #333 20%, #111 21%, #222 40%, #1a1a2e 41%);
+                    border: 2px solid rgba(0,210,255,0.2);
+                    animation: spin 8s linear infinite;
+                    animation-play-state: paused;
+                    overflow: hidden;
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                ">
+                    <img id="cd-img" src="" style="
+                        width: 100%;
+                        height: 100%;
+                        border-radius: 50%;
+                        object-fit: cover;
+                        display: none;
+                    ">
+                    <div style="
+                        position: absolute;
+                        width: 22%;
+                        aspect-ratio: 1;
+                        border-radius: 50%;
+                        background: #0a0a14;
+                        border: 1px solid rgba(0,210,255,0.3);
+                        z-index: 2;
+                    "></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -644,6 +681,9 @@
         resetGame();
         bgMusic.src = SONGS[songIdx].url; bgMusic.play().catch(()=>{});
         updateSongDisplay();
+        document.getElementById('cd-disc').style.animationPlayState = 'running'; 
+        document.getElementById('cd-img').src = 'Asset/Image/cd.webp';   // ADD
+        document.getElementById('cd-img').style.display = 'block';        // ADD
     }
 
     function resetGame() {
@@ -783,7 +823,14 @@
     });
 
     function toggleTheme(e) { if(e) e.stopPropagation(); themeIdx = (themeIdx + 1) % THEMES.length; updateProgressionBar(); updateNextPreview(); }
-    function nextSong(e)    { if(e) e.stopPropagation(); songIdx = (songIdx + 1) % SONGS.length; bgMusic.src = SONGS[songIdx].url; bgMusic.play(); updateSongDisplay(); }
+    function nextSong(e) {
+        if(e) e.stopPropagation();
+        songIdx = (songIdx + 1) % SONGS.length;
+        bgMusic.src = SONGS[songIdx].url;
+        bgMusic.play();
+        updateSongDisplay();
+        document.getElementById('cd-disc').style.animationPlayState = 'running';
+    }
 
     document.addEventListener("visibilitychange", () => {
         if (document.hidden) { bgMusic.pause(); }
